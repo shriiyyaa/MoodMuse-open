@@ -248,17 +248,14 @@ export async function matchSongs(
         // Base score from vector similarity
         let score = calculateMoodSimilarity(moodResult.vector, song.emotionalProfile);
 
-        // MAJOR BONUS for category match (this is the key fix!)
+        // CATEGORY BONUSES
         if (categoryMatch) {
             score += 0.5; // Big boost for matching category
         }
 
-        // Penalty for opposite category
-        const isSadMood = ['sad', 'heartbreak', 'melancholy'].some(c => preferredCategories.includes(c as any));
-        const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
-        if (isSadMood && isHappySong) {
-            score -= 0.3; // Penalty for happy song when user is sad
-        }
+        // Apply GENERALIZED PENALTY for conflicting moods
+        const penalty = calculateCategoryPenalty(preferredCategories, songCategories as string[]);
+        score += penalty;
 
         return { song, score, categories: songCategories };
     });
@@ -319,9 +316,9 @@ async function matchSongsBalancedWithCategories(
             let score = calculateMoodSimilarity(moodResult.vector, song.emotionalProfile);
             if (categoryMatch) score += 0.5;
 
-            const isSadMood = ['sad', 'heartbreak', 'melancholy'].some(c => preferredCategories.includes(c));
-            const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
-            if (isSadMood && isHappySong) score -= 0.3;
+            // Apply GENERALIZED PENALTY
+            const penalty = calculateCategoryPenalty(preferredCategories, songCategories as string[]);
+            score += penalty;
 
             return { song, score, lang };
         });
@@ -536,18 +533,96 @@ function interpolateVector(start: any, end: any, t: number): any {
     return result;
 }
 
+
+/**
+ * Calculate penalty for conflicting mood categories.
+ * Returns a negative number (penalty) or 0.
+ */
+function calculateCategoryPenalty(
+    preferredCategories: string[],
+    songCategories: string[]
+): number {
+    let penalty = 0;
+
+    // Helper to check if ANY preferred category matches a list
+    const hasPreferred = (categories: string[]) =>
+        categories.some(c => preferredCategories.includes(c));
+
+    // Helper to check if ANY song category matches a list
+    const hasSongCategory = (categories: string[]) =>
+        categories.some(c => songCategories.includes(c));
+
+    // 1. SAD CONTEXT (User is sad/heartbroken)
+    if (hasPreferred(['sad', 'heartbreak', 'melancholy'])) {
+        // Penalty for happy/party energy
+        if (hasSongCategory(['happy', 'party', 'excited', 'motivational'])) {
+            penalty -= 0.5; // Strong penalty
+        }
+    }
+
+    // 2. ROMANTIC CONTEXT (User is romantic, but NOT party/happy)
+    // "Pure" romantic context
+    else if (hasPreferred(['romantic']) && !hasPreferred(['party', 'happy', 'excited'])) {
+        // Penalty for high energy/angry/party
+        if (hasSongCategory(['party', 'angry', 'motivational', 'excited'])) {
+            penalty -= 0.5;
+        }
+    }
+
+    // 3. CHILL CONTEXT (User is chill/peaceful)
+    else if (hasPreferred(['chill', 'peaceful'])) {
+        // Penalty for high energy/intense
+        if (hasSongCategory(['party', 'angry', 'excited', 'motivational', 'heartbreak'])) {
+            penalty -= 0.4;
+        }
+    }
+
+    // 4. ANGRY CONTEXT (User is angry)
+    else if (hasPreferred(['angry', 'frustrated'])) {
+        // Penalty for too soft/happy
+        if (hasSongCategory(['happy', 'romantic', 'chill', 'peaceful'])) {
+            penalty -= 0.4;
+        }
+    }
+
+    // 5. HIGH ENERGY/PARTY CONTEXT
+    else if (hasPreferred(['party', 'excited'])) {
+        // Penalty for low energy/sad
+        if (hasSongCategory(['sad', 'heartbreak', 'melancholy', 'chill', 'sleepy', 'nostalgia'])) {
+            penalty -= 0.5;
+        }
+    }
+
+    // 6. NOSTALGIC CONTEXT (New!)
+    else if (hasPreferred(['nostalgia', 'nostalgic'])) {
+        // Penalty for things that break the immersion
+        if (hasSongCategory(['party', 'angry', 'motivational', 'excited'])) {
+            penalty -= 0.4;
+        }
+    }
+
+    // 7. MOTIVATIONAL CONTEXT (New!)
+    else if (hasPreferred(['motivational'])) {
+        // Penalty for downers
+        if (hasSongCategory(['sad', 'heartbreak', 'melancholy', 'sleepy'])) {
+            penalty -= 0.5;
+        }
+    }
+
+    // 8. HAPPY CONTEXT (General happiness, not necessarily party)
+    else if (hasPreferred(['happy', 'joy'])) {
+        // Penalty for negative emotions
+        if (hasSongCategory(['sad', 'heartbreak', 'angry', 'melancholy'])) {
+            penalty -= 0.5;
+        }
+    }
+
+    return penalty;
+}
+
 /**
  * Match songs with a GRADUAL transition from start mood to target mood.
  * Uses CATEGORY-BASED MATCHING at each step for accurate mood alignment.
- * 
- * The queue starts with songs matching the user's CURRENT mood,
- * then gradually transitions toward the intent (lift/distract/surprise).
- * 
- * For example:
- * - User is SAD, intent is LIFT
- * - Songs 1-3: sad/melancholy songs (honoring their mood)
- * - Songs 4-6: romantic/chill songs (gentle transition)
- * - Songs 7-10: hopeful/calm songs (arriving at intent)
  */
 export async function matchSongsGradient(
     startResult: MoodResult,
@@ -581,16 +656,7 @@ export async function matchSongsGradient(
     const finalLimit = limit;
     const usedArtists = new Set<string>();
 
-    // Determine if we're dealing with a sad mood
-    const primaryMoodLower = startResult.primaryMood.toLowerCase();
-    const isSadMood = primaryMoodLower.includes('sad') ||
-        primaryMoodLower.includes('melancholy') ||
-        primaryMoodLower.includes('grief') ||
-        primaryMoodLower.includes('heartbroken') ||
-        primaryMoodLower.includes('lonely');
-
     // Get preferred categories for the START mood (with 'stay' intent)
-    // This ensures we honor their actual mood at the beginning
     const startCategories = getMoodPreferences(startResult.primaryMood, 'stay');
 
     for (let i = 0; i < finalLimit; i++) {
@@ -600,11 +666,6 @@ export async function matchSongsGradient(
         // Interpolate the mood vector
         const currentVector = interpolateVector(startResult.vector, targetVector, t);
 
-        // For categories, blend based on t:
-        // - At t=0 (start), use 100% start categories
-        // - At t=1 (end), use mainly neutral/broader categories
-        // This ensures we honor the mood at the start and gradually broaden
-
         let bestSong: Song | null = null;
         let bestScore = -Infinity;
 
@@ -612,7 +673,7 @@ export async function matchSongsGradient(
             if (excludeSet.has(song.id)) continue;
             if (usedArtists.has(song.artist)) continue;
 
-            // Language balancing: If mixed languages, rotate through them
+            // Language balancing
             if (languages.length > 1) {
                 const targetLang = languages[i % languages.length];
                 if (song.language.toLowerCase() !== targetLang) continue;
@@ -624,28 +685,24 @@ export async function matchSongsGradient(
             // Base score from vector similarity
             let score = calculateMoodSimilarity(currentVector, song.emotionalProfile);
 
-            // CATEGORY BONUSES - weighted by how early in the queue we are
-            // Early songs (low t) get stronger category matching
+            // CATEGORY BONUSES & PENALTIES
             const categoryWeight = 1 - t; // 1.0 at start, 0.0 at end
 
             const categoryMatch = startCategories.some(pref => songCategories.includes(pref as any));
             if (categoryMatch) {
-                score += 0.5 * categoryWeight; // Strong bonus early, fades toward end
+                score += 0.5 * categoryWeight;
             }
 
-            // PENALTY for opposite moods (especially early in queue)
-            const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
-            if (isSadMood && isHappySong) {
-                // Strong penalty at start, reduced penalty at end
-                score -= 0.4 * categoryWeight;
-            }
+            // Apply GENERALIZED PENALTY
+            // Weighted by categoryWeight so penalties fade as we move away from start mood
+            const penalty = calculateCategoryPenalty(startCategories, songCategories as string[]);
+            score += penalty * categoryWeight;
 
             // BONUS for matching sonic mood at any point
-            const isSadSong = songCategories.includes('sad') ||
-                songCategories.includes('heartbreak') ||
-                songCategories.includes('melancholy');
+            // (Keep existing sad song bonus logic if desired, or rely on generalized logic)
+            const isSadMood = startCategories.includes('sad') || startCategories.includes('melancholy');
+            const isSadSong = songCategories.includes('sad') || songCategories.includes('heartbreak');
             if (isSadMood && isSadSong && t < 0.5) {
-                // Extra bonus for sad songs in first half when user is sad
                 score += 0.3;
             }
 
@@ -660,13 +717,12 @@ export async function matchSongsGradient(
             usedArtists.add(bestSong.artist);
             selectedMatches.push({
                 song: bestSong,
-                score: Math.min(bestScore, 1), // Cap at 1
+                score: Math.min(bestScore, 1),
                 explanation: generateMockExplanation(bestSong, startResult.primaryMood)
             });
         }
     }
 
-    // Generate headline based on the start mood (context of where they are)
     const headline = generateMockHeadline(startResult.primaryMood);
 
     return {
