@@ -94,31 +94,48 @@ export async function analyzeMood(input: MoodInput): Promise<MoodResult> {
 }
 
 /**
- * Calculate cosine similarity between two mood vectors.
- * Used for matching songs to moods.
+ * Calculate mood similarity between user mood and song.
+ * Uses weighted Euclidean distance for better matching.
+ * Songs with closer emotional profiles get higher scores.
  */
-export function calculateMoodSimilarity(a: MoodVector, b: MoodVector): number {
+export function calculateMoodSimilarity(userMood: MoodVector, songMood: MoodVector): number {
+    // Weight certain dimensions more heavily for better matches
+    const weights: Record<keyof MoodVector, number> = {
+        valence: 2.0,      // Very important - positive/negative mood
+        energy: 1.5,       // Important - high/low energy
+        melancholy: 2.0,   // Very important for sad matching
+        tension: 1.0,
+        nostalgia: 1.0,
+        hope: 1.2,
+        intensity: 1.0,
+        social: 0.5
+    };
+
+    let weightedDistance = 0;
+    let totalWeight = 0;
+
     const keys: (keyof MoodVector)[] = [
         'valence', 'energy', 'tension', 'melancholy',
         'nostalgia', 'hope', 'intensity', 'social'
     ];
 
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
     for (const key of keys) {
-        dotProduct += a[key] * b[key];
-        normA += a[key] * a[key];
-        normB += b[key] * b[key];
+        const userVal = userMood[key];
+        const songVal = songMood[key];
+        const weight = weights[key];
+
+        // Calculate weighted squared difference
+        const diff = userVal - songVal;
+        weightedDistance += weight * diff * diff;
+        totalWeight += weight;
     }
 
-    const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+    // Normalize distance
+    const normalizedDistance = Math.sqrt(weightedDistance / totalWeight);
 
-    if (denominator === 0) {
-        return 0;
-    }
+    // Convert distance to similarity (0-1, higher is better)
+    // Max possible distance is ~2 (from -1 to 1), so we normalize accordingly
+    const similarity = 1 - Math.min(normalizedDistance, 1);
 
-    // Normalize to 0-1 range (cosine similarity is -1 to 1)
-    return (dotProduct / denominator + 1) / 2;
+    return similarity;
 }
