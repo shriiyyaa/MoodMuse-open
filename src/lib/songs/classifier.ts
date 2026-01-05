@@ -26,7 +26,9 @@ const SAD_KEYWORDS = [
     'bhula', 'bhool', 'forget', 'gone', 'left', 'chod', 'chhod',
     'dil toot', 'tuta', 'toota', 'shattered', 'empty', 'hollow',
     'tears', 'weep', 'sob', 'grief', 'mourn', 'dark', 'night',
-    'raat', 'akela', 'khamoshi', 'silence', 'wait', 'intezaar'
+    'raat', 'akela', 'khamoshi', 'silence', 'wait', 'intezaar',
+    'maut', 'death', 'die', 'mar gaya', 'jeena nahi', 'guzaarish',
+    'suffer', 'drowning', 'sinking', 'fading', 'darkness'
 ];
 
 // Keywords that indicate heartbreak specifically
@@ -34,7 +36,9 @@ const HEARTBREAK_KEYWORDS = [
     'heartbreak', 'breakup', 'toot', 'toota', 'broken heart',
     'dil toot', 'bewafa', 'dhoka', 'cheat', 'betray', 'leave',
     'chhod', 'chod diya', 'goodbye', 'alvida', 'judai', 'separation',
-    'ex', 'over', 'end', 'finish', 'khatam', 'pyaar khatam'
+    'ex', 'over', 'end', 'finish', 'khatam', 'pyaar khatam',
+    'tadap', 'sazaa', 'punish', 'regret', 'pachtava', 'sorry',
+    'moved on', 'replaced', 'cheated', 'lied'
 ];
 
 // Keywords for romantic/love songs
@@ -44,7 +48,9 @@ const ROMANTIC_KEYWORDS = [
     'sanam', 'mehboob', 'dilbar', 'jaanu', 'soulmate', 'forever',
     'together', 'hug', 'kiss', 'embrace', 'touch', 'feel',
     'chemistry', 'connection', 'passion', 'desire', 'yearn',
-    'chahun', 'chaha', 'chahat', 'tera', 'mera', 'tujhe', 'tumhe'
+    'chahun', 'chaha', 'chahat', 'tera', 'mera', 'tujhe', 'tumhe',
+    'humsafar', 'saathiya', 'raabta', 'waala love', 'wala love',
+    'ishq wala', 'romantic', 'couple', 'marry', 'wedding'
 ];
 
 // Keywords for happy/upbeat songs
@@ -53,7 +59,9 @@ const HAPPY_KEYWORDS = [
     'laugh', 'dance', 'naach', 'party', 'enjoy', 'masti', 'fun',
     'awesome', 'amazing', 'wonderful', 'beautiful', 'sundar',
     'good', 'great', 'best', 'perfect', 'lucky', 'blessed',
-    'sunshine', 'dhoop', 'bright', 'light', 'radiant'
+    'sunshine', 'dhoop', 'bright', 'light', 'radiant',
+    'zinda', 'zindagi', 'jeena', 'mast', 'jhakaas', 'bindaas',
+    'awesome', 'top', 'cloud 9', 'winning', 'jeet'
 ];
 
 // Keywords for party/dance songs
@@ -62,7 +70,12 @@ const PARTY_KEYWORDS = [
     'groove', 'move', 'shake', 'pump', 'bass', 'drop', 'lit',
     'turn up', 'get up', 'hands up', 'jump', 'energy', 'fire',
     'badshah', 'yo yo', 'honey singh', 'raftaar', 'remix',
-    'wedding', 'sangeet', 'shaadi', 'baraat', 'celebrate'
+    'wedding', 'sangeet', 'shaadi', 'baraat', 'celebrate',
+    'daroo', 'daru', 'sharaab', 'sharabi', 'vodka', 'tequila', 'bottle', 'peg',
+    'nashe', 'nasha', 'high', 'kudi', 'munda', 'swag', 'savage',
+    'proper', 'patola', 'bomb', 'bhangra', 'dhol', 'thumka',
+    'latka', 'jhatka', 'nachne', 'nacho', 'desi', 'gabru',
+    'hookah', 'night', 'jashn', 'vibes', 'weekend', 'saturday'
 ];
 
 // Keywords for chill/relaxing songs

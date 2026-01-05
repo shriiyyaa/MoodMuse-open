@@ -121,6 +121,13 @@ export default function MusicPlayer({
         currentIndexRef.current = currentIndex;
     }, [currentIndex]);
 
+    // Sync with external control (when user clicks song in list below)
+    useEffect(() => {
+        if (initialIndex !== currentIndex) {
+            setCurrentIndex(initialIndex);
+        }
+    }, [initialIndex]);
+
     useEffect(() => {
         songsRef.current = songs;
     }, [songs]);

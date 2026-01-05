@@ -556,7 +556,7 @@ function calculateCategoryPenalty(
     if (hasPreferred(['sad', 'heartbreak', 'melancholy'])) {
         // Penalty for happy/party energy
         if (hasSongCategory(['happy', 'party', 'excited', 'motivational'])) {
-            penalty -= 0.5; // Strong penalty
+            penalty -= 1.0; // NUCLEAR PENALTY
         }
     }
 
@@ -565,7 +565,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['romantic']) && !hasPreferred(['party', 'happy', 'excited'])) {
         // Penalty for high energy/angry/party
         if (hasSongCategory(['party', 'angry', 'motivational', 'excited'])) {
-            penalty -= 0.5;
+            penalty -= 1.0;
         }
     }
 
@@ -573,7 +573,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['chill', 'peaceful'])) {
         // Penalty for high energy/intense
         if (hasSongCategory(['party', 'angry', 'excited', 'motivational', 'heartbreak'])) {
-            penalty -= 0.4;
+            penalty -= 1.0;
         }
     }
 
@@ -581,7 +581,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['angry', 'frustrated'])) {
         // Penalty for too soft/happy
         if (hasSongCategory(['happy', 'romantic', 'chill', 'peaceful'])) {
-            penalty -= 0.4;
+            penalty -= 1.0;
         }
     }
 
@@ -589,7 +589,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['party', 'excited'])) {
         // Penalty for low energy/sad
         if (hasSongCategory(['sad', 'heartbreak', 'melancholy', 'chill', 'sleepy', 'nostalgia'])) {
-            penalty -= 0.5;
+            penalty -= 1.0;
         }
     }
 
@@ -597,7 +597,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['nostalgia', 'nostalgic'])) {
         // Penalty for things that break the immersion
         if (hasSongCategory(['party', 'angry', 'motivational', 'excited'])) {
-            penalty -= 0.4;
+            penalty -= 1.0;
         }
     }
 
@@ -605,7 +605,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['motivational'])) {
         // Penalty for downers
         if (hasSongCategory(['sad', 'heartbreak', 'melancholy', 'sleepy'])) {
-            penalty -= 0.5;
+            penalty -= 1.0;
         }
     }
 
@@ -613,7 +613,7 @@ function calculateCategoryPenalty(
     else if (hasPreferred(['happy', 'joy'])) {
         // Penalty for negative emotions
         if (hasSongCategory(['sad', 'heartbreak', 'angry', 'melancholy'])) {
-            penalty -= 0.5;
+            penalty -= 1.0;
         }
     }
 
