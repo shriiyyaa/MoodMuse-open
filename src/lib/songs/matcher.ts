@@ -538,7 +538,16 @@ function interpolateVector(start: any, end: any, t: number): any {
 
 /**
  * Match songs with a GRADUAL transition from start mood to target mood.
- * Used for "Lift Me Up" to create a journey.
+ * Uses CATEGORY-BASED MATCHING at each step for accurate mood alignment.
+ * 
+ * The queue starts with songs matching the user's CURRENT mood,
+ * then gradually transitions toward the intent (lift/distract/surprise).
+ * 
+ * For example:
+ * - User is SAD, intent is LIFT
+ * - Songs 1-3: sad/melancholy songs (honoring their mood)
+ * - Songs 4-6: romantic/chill songs (gentle transition)
+ * - Songs 7-10: hopeful/calm songs (arriving at intent)
  */
 export async function matchSongsGradient(
     startResult: MoodResult,
@@ -549,6 +558,9 @@ export async function matchSongsGradient(
 ): Promise<SongMatchResponse> {
     const excludeSet = new Set(excludeIds);
     const selectedMatches: SongMatch[] = [];
+
+    // Import classifier for category-based matching
+    const { classifySongMood, getMoodPreferences } = await import('@/lib/songs/classifier');
 
     // Parse languages for balanced checking
     const languages = language.toLowerCase() === 'all'
@@ -566,23 +578,39 @@ export async function matchSongsGradient(
     };
 
     let pool = getCandidates();
-
-    // Limit check
     const finalLimit = limit;
+    const usedArtists = new Set<string>();
+
+    // Determine if we're dealing with a sad mood
+    const primaryMoodLower = startResult.primaryMood.toLowerCase();
+    const isSadMood = primaryMoodLower.includes('sad') ||
+        primaryMoodLower.includes('melancholy') ||
+        primaryMoodLower.includes('grief') ||
+        primaryMoodLower.includes('heartbroken') ||
+        primaryMoodLower.includes('lonely');
+
+    // Get preferred categories for the START mood (with 'stay' intent)
+    // This ensures we honor their actual mood at the beginning
+    const startCategories = getMoodPreferences(startResult.primaryMood, 'stay');
 
     for (let i = 0; i < finalLimit; i++) {
         // Calculate progress (0.0 to 1.0)
-        // If limit is 1, t=1. If limit > 1, spread it.
         const t = finalLimit > 1 ? i / (finalLimit - 1) : 1;
 
+        // Interpolate the mood vector
         const currentVector = interpolateVector(startResult.vector, targetVector, t);
 
-        // Find best match for this vector in the pool
+        // For categories, blend based on t:
+        // - At t=0 (start), use 100% start categories
+        // - At t=1 (end), use mainly neutral/broader categories
+        // This ensures we honor the mood at the start and gradually broaden
+
         let bestSong: Song | null = null;
         let bestScore = -Infinity;
 
         for (const song of pool) {
             if (excludeSet.has(song.id)) continue;
+            if (usedArtists.has(song.artist)) continue;
 
             // Language balancing: If mixed languages, rotate through them
             if (languages.length > 1) {
@@ -590,7 +618,37 @@ export async function matchSongsGradient(
                 if (song.language.toLowerCase() !== targetLang) continue;
             }
 
-            const score = calculateMoodSimilarity(currentVector, song.emotionalProfile);
+            // Get song's categories
+            const songCategories = classifySongMood(song.title, song.artist);
+
+            // Base score from vector similarity
+            let score = calculateMoodSimilarity(currentVector, song.emotionalProfile);
+
+            // CATEGORY BONUSES - weighted by how early in the queue we are
+            // Early songs (low t) get stronger category matching
+            const categoryWeight = 1 - t; // 1.0 at start, 0.0 at end
+
+            const categoryMatch = startCategories.some(pref => songCategories.includes(pref as any));
+            if (categoryMatch) {
+                score += 0.5 * categoryWeight; // Strong bonus early, fades toward end
+            }
+
+            // PENALTY for opposite moods (especially early in queue)
+            const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
+            if (isSadMood && isHappySong) {
+                // Strong penalty at start, reduced penalty at end
+                score -= 0.4 * categoryWeight;
+            }
+
+            // BONUS for matching sonic mood at any point
+            const isSadSong = songCategories.includes('sad') ||
+                songCategories.includes('heartbreak') ||
+                songCategories.includes('melancholy');
+            if (isSadMood && isSadSong && t < 0.5) {
+                // Extra bonus for sad songs in first half when user is sad
+                score += 0.3;
+            }
+
             if (score > bestScore) {
                 bestScore = score;
                 bestSong = song;
@@ -598,11 +656,12 @@ export async function matchSongsGradient(
         }
 
         if (bestSong) {
-            excludeSet.add((bestSong as Song).id);
+            excludeSet.add(bestSong.id);
+            usedArtists.add(bestSong.artist);
             selectedMatches.push({
-                song: bestSong as Song,
-                score: bestScore,
-                explanation: generateMockExplanation(bestSong as Song, startResult.primaryMood)
+                song: bestSong,
+                score: Math.min(bestScore, 1), // Cap at 1
+                explanation: generateMockExplanation(bestSong, startResult.primaryMood)
             });
         }
     }
@@ -615,3 +674,4 @@ export async function matchSongsGradient(
         songs: selectedMatches
     };
 }
+
