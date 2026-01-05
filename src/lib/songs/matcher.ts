@@ -201,38 +201,67 @@ function generateMockExplanation(song: Song, primaryMood: string): string {
 
 /**
  * Match songs to a mood vector and generate explanations.
- * Supports balanced language distribution for mixed language selections.
+ * Uses CATEGORY-BASED MATCHING for accurate mood alignment.
  * @param excludeIds - Array of song IDs to exclude (already played songs)
+ * @param intent - User's emotional intent (stay, lift, distract, surprise)
  */
 export async function matchSongs(
     moodResult: MoodResult,
     language: string,
     limit: number = 5,
-    excludeIds: string[] = []
+    excludeIds: string[] = [],
+    intent: string = 'stay'
 ): Promise<SongMatchResponse> {
     const normalizedLang = language.toLowerCase();
     const excludeSet = new Set(excludeIds);
 
+    // Import classifier
+    const { classifySongMood, getMoodPreferences } = await import('@/lib/songs/classifier');
+
+    // Get preferred song categories based on user mood + intent
+    const preferredCategories = getMoodPreferences(moodResult.primaryMood, intent);
+
     // Check if this is a mixed language request
     if (normalizedLang.includes('+') || normalizedLang === 'all') {
-        return matchSongsBalanced(moodResult, language, limit, excludeIds);
+        return matchSongsBalancedWithCategories(
+            moodResult, language, limit, excludeIds, intent, preferredCategories, classifySongMood
+        );
     }
 
-    // Single language matching (original logic)
+    // Single language matching with categories
     let candidates = getSongsByLanguage(language);
 
     if (candidates.length === 0) {
         candidates = getSongsByLanguage('any');
     }
 
-    // Filter out excluded songs (already played)
+    // Filter out excluded songs
     candidates = candidates.filter(song => !excludeSet.has(song.id));
 
-    // Calculate similarity scores for all candidates
-    const scoredSongs = candidates.map(song => ({
-        song,
-        score: calculateMoodSimilarity(moodResult.vector, song.emotionalProfile),
-    }));
+    // Score songs with CATEGORY BONUS
+    const scoredSongs = candidates.map(song => {
+        const songCategories = classifySongMood(song.title, song.artist);
+
+        // Check if song matches preferred categories
+        const categoryMatch = preferredCategories.some(pref => songCategories.includes(pref as any));
+
+        // Base score from vector similarity
+        let score = calculateMoodSimilarity(moodResult.vector, song.emotionalProfile);
+
+        // MAJOR BONUS for category match (this is the key fix!)
+        if (categoryMatch) {
+            score += 0.5; // Big boost for matching category
+        }
+
+        // Penalty for opposite category
+        const isSadMood = ['sad', 'heartbreak', 'melancholy'].some(c => preferredCategories.includes(c as any));
+        const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
+        if (isSadMood && isHappySong) {
+            score -= 0.3; // Penalty for happy song when user is sad
+        }
+
+        return { song, score, categories: songCategories };
+    });
 
     // Sort by score (highest first)
     scoredSongs.sort((a, b) => b.score - a.score);
@@ -246,7 +275,107 @@ export async function matchSongs(
     // Generate matches with explanations
     const matches: SongMatch[] = selected.map(item => ({
         song: item.song,
-        score: item.score,
+        score: Math.min(item.score, 1), // Cap at 1
+        explanation: generateMockExplanation(item.song, moodResult.primaryMood),
+    }));
+
+    return {
+        headline,
+        songs: matches,
+    };
+}
+
+/**
+ * Match songs with BALANCED language distribution + categories.
+ */
+async function matchSongsBalancedWithCategories(
+    moodResult: MoodResult,
+    languageString: string,
+    limit: number,
+    excludeIds: string[],
+    intent: string,
+    preferredCategories: string[],
+    classifySongMood: (title: string, artist: string) => string[]
+): Promise<SongMatchResponse> {
+    const excludeSet = new Set(excludeIds);
+
+    // Parse languages
+    const languages = languageString.toLowerCase() === 'all'
+        ? ['english', 'hindi', 'punjabi']
+        : languageString.toLowerCase().split('+').map(l => l.trim());
+
+    // Calculate songs per language
+    const songsPerLanguage = Math.ceil(limit / languages.length);
+
+    const songsByLanguage: { song: Song; score: number; lang: string }[] = [];
+
+    for (const lang of languages) {
+        const candidates = getSongsByLanguage(lang).filter(song => !excludeSet.has(song.id));
+
+        const scoredSongs = candidates.map(song => {
+            const songCategories = classifySongMood(song.title, song.artist);
+            const categoryMatch = preferredCategories.some(pref => songCategories.includes(pref));
+
+            let score = calculateMoodSimilarity(moodResult.vector, song.emotionalProfile);
+            if (categoryMatch) score += 0.5;
+
+            const isSadMood = ['sad', 'heartbreak', 'melancholy'].some(c => preferredCategories.includes(c));
+            const isHappySong = songCategories.includes('happy') || songCategories.includes('party');
+            if (isSadMood && isHappySong) score -= 0.3;
+
+            return { song, score, lang };
+        });
+
+        scoredSongs.sort((a, b) => b.score - a.score);
+
+        const usedArtists = new Set<string>();
+        let count = 0;
+
+        for (const item of scoredSongs) {
+            if (count >= songsPerLanguage) break;
+            if (usedArtists.has(item.song.artist)) continue;
+
+            songsByLanguage.push(item);
+            usedArtists.add(item.song.artist);
+            count++;
+        }
+    }
+
+    // Interleave songs from different languages
+    const interleaved: { song: Song; score: number }[] = [];
+    const langQueues: Map<string, { song: Song; score: number }[]> = new Map();
+
+    for (const item of songsByLanguage) {
+        if (!langQueues.has(item.lang)) {
+            langQueues.set(item.lang, []);
+        }
+        langQueues.get(item.lang)!.push({ song: item.song, score: item.score });
+    }
+
+    let added = 0;
+    let langIndex = 0;
+    const langArray = Array.from(langQueues.keys());
+
+    while (added < limit && songsByLanguage.length > 0) {
+        const currentLang = langArray[langIndex % langArray.length];
+        const queue = langQueues.get(currentLang);
+
+        if (queue && queue.length > 0) {
+            interleaved.push(queue.shift()!);
+            added++;
+        }
+
+        langIndex++;
+
+        if (Array.from(langQueues.values()).every(q => q.length === 0)) break;
+    }
+
+    const finalSongs = interleaved.slice(0, limit);
+    const headline = generateMockHeadline(moodResult.primaryMood);
+
+    const matches: SongMatch[] = finalSongs.map(item => ({
+        song: item.song,
+        score: Math.min(item.score, 1),
         explanation: generateMockExplanation(item.song, moodResult.primaryMood),
     }));
 
