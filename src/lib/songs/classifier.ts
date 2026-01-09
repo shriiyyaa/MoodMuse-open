@@ -156,10 +156,10 @@ export function getMoodPreferences(primaryMood: string, intent: string): SongMoo
 
     // For "stay" intent (sit with it) - match the actual mood
     if (intent === 'stay') {
-        if (moodLower.includes('sad') || moodLower.includes('melancholy') || moodLower.includes('grief')) {
+        if (moodLower.includes('sad') || moodLower.includes('melancholy') || moodLower.includes('grief') || moodLower.includes('lonely')) {
             return ['sad', 'heartbreak', 'melancholy'];
         }
-        if (moodLower.includes('heartbroken') || moodLower.includes('broken')) {
+        if (moodLower.includes('heartbroken') || moodLower.includes('broken') || moodLower.includes('shattered') || moodLower.includes('heartbreak')) {
             return ['heartbreak', 'sad'];
         }
         if (moodLower.includes('nostalgic') || moodLower.includes('wistful')) {
@@ -179,6 +179,9 @@ export function getMoodPreferences(primaryMood: string, intent: string): SongMoo
         }
         if (moodLower.includes('peaceful') || moodLower.includes('calm')) {
             return ['chill', 'romantic'];
+        }
+        if (moodLower.includes('tired') || moodLower.includes('exhausted') || moodLower.includes('drained') || moodLower.includes('sleepy')) {
+            return ['chill', 'sad'];
         }
     }
 

@@ -23,7 +23,6 @@ const LANGUAGES = [
     // Mixed Languages
     { code: 'Hindi+English', label: 'Hindi + English', category: 'mixed' },
     { code: 'Hindi+Punjabi', label: 'Hindi + Punjabi', category: 'mixed' },
-    { code: 'English+Punjabi', label: 'English + Punjabi', category: 'mixed' },
     { code: 'All', label: 'All Languages', category: 'all' },
 ];
 
@@ -105,7 +104,7 @@ export default function LanguagePage() {
                 {/* Single Languages */}
                 <div className="mb-6">
                     <p className="text-caption mb-3 px-1">Single Language</p>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-4 gap-3">
                         {singleLanguages.map((lang) => (
                             <button
                                 key={lang.code}
