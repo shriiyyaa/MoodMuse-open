@@ -1,6 +1,6 @@
 # MoodMuse
 
-> **AI-Powered Music Recommendations Based on Your Mood**
+> **Music Recommendations Based on Your Mood**
 
 MoodMuse is a web application that recommends songs based on how you're feeling. Simply describe your mood in natural language, and MoodMuse will curate a personalized playlist that matches your emotional state.
 
@@ -14,7 +14,7 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 ## Features
 
 - **Natural Language Mood Input** - Describe how you feel in your own words
-- **AI-Powered Analysis** - Uses OpenAI to understand emotional context
+- **Built-in Mood Analyzer** - Custom keyword, phrase, and emoji detection system
 - **Smart Recommendations** - Matches songs to your emotional profile
 - **Multi-Language Support** - Hindi, Punjabi, and English song libraries
 - **Duration Control** - Choose playlist length (15, 30, 60 minutes)
@@ -31,7 +31,6 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 | **Next.js 14** | React framework with App Router |
 | **TypeScript** | Type-safe development |
 | **Tailwind CSS** | Utility-first styling |
-| **OpenAI API** | Mood analysis and emotional profiling |
 | **YouTube** | Song playback integration |
 
 ---
@@ -42,7 +41,6 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 
 - Node.js 18+ 
 - npm or yarn
-- OpenAI API key
 
 ### Installation
 
@@ -57,22 +55,12 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
    npm install
    ```
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` and add your OpenAI API key:
-   ```
-   OPENAI_API_KEY=sk-your-api-key-here
-   ```
-
-4. **Run the development server**
+3. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open in browser**
+4. **Open in browser**
    ```
    http://localhost:3000
    ```
@@ -90,10 +78,10 @@ MoodMuse/
 │   │   ├── language/           # Language selection
 │   │   ├── intent/             # Intent selection (study, party, etc.)
 │   │   ├── duration/           # Playlist duration selection
-│   │   ├── processing/         # AI processing screen
+│   │   ├── processing/         # Processing screen
 │   │   ├── results/            # Song recommendations display
 │   │   └── api/                # API routes
-│   │       ├── mood/analyze/   # OpenAI mood analysis endpoint
+│   │       ├── mood/analyze/   # Mood analysis endpoint
 │   │       ├── session/        # Session management
 │   │       └── songs/          # Song data endpoints
 │   │
@@ -105,13 +93,11 @@ MoodMuse/
 │   │   │   └── database.ts     # Database aggregation
 │   │   │
 │   │   └── mood/               # Mood analysis logic
-│   │       ├── analyzer.ts     # OpenAI integration
-│   │       ├── mockAnalyzer.ts # Fallback analyzer
+│   │       ├── mockAnalyzer.ts # Built-in mood analyzer
 │   │       └── matcher.ts      # Song matching algorithm
 │   │
 │   └── components/             # React components
 │
-├── .env.example                # Environment template
 ├── CONTRIBUTING.md             # Contribution guidelines
 ├── LICENSE                     # MIT License
 └── package.json
@@ -125,15 +111,12 @@ MoodMuse/
 2. **Language Selection** - Choose preferred music language(s)
 3. **Intent Selection** - What activity? (study, workout, chill, etc.)
 4. **Duration** - How long should the playlist be?
-5. **AI Analysis** - OpenAI analyzes the emotional profile:
-   - Valence (positivity)
-   - Energy level
-   - Tension
-   - Melancholy
-   - Nostalgia
-   - Hope
-   - Intensity
-   - Social context
+5. **Mood Analysis** - Built-in analyzer extracts emotional profile using:
+   - Keyword detection (happy, sad, love, angry, etc.)
+   - Phrase matching (Taylor Swift lyrics, Bollywood references, Gen-Z slang)
+   - Emoji recognition
+   - Generates 8-dimensional mood vector:
+     - Valence, Energy, Tension, Melancholy, Nostalgia, Hope, Intensity, Social
 6. **Matching** - Algorithm matches songs with similar emotional profiles
 7. **Results** - Personalized playlist with YouTube integration
 
@@ -178,6 +161,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- OpenAI for the GPT API
 - All the amazing artists whose music powers this app
 - Contributors who help improve MoodMuse
