@@ -258,8 +258,8 @@ export default function MusicPlayer({
 
                                 try {
                                     if (playerRef.current && currentSong) {
-                                        // Specific search for lyric video effectively finds alternatives
-                                        const query = `${currentSong.title} ${currentSong.artist} lyrics`;
+                                        // Search for exact song title + artist + "official audio" for best match
+                                        const query = `"${currentSong.title}" "${currentSong.artist}" official audio`;
                                         playerRef.current.loadPlaylist({
                                             listType: 'search',
                                             list: query,
