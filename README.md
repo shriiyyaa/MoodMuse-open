@@ -14,12 +14,15 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 ## Features
 
 - **Natural Language Input** - Describe how you feel in your own words
-- **Custom Mood Analyzer** - Our own built-in mood detection system (no external APIs)
+- **Custom Mood Analyzer** - Built-in mood detection system (no external APIs)
 - **Smart Song Matching** - Matches songs based on emotional profile vectors
 - **Multi-Language Library** - Hindi, Punjabi, and English songs
 - **Playlist Duration** - Choose 15, 30, or 60 minute playlists
-- **Intent Selection** - Study, party, relax, workout, and more
-- **Dark/Light Mode** - Theme support
+- **Intent Selection** - Choose how music relates to your mood:
+  - Sit with it (match my mood exactly)
+  - Lift me slowly (gradually feel better)
+  - Change my vibe (something different)
+  - Surprise me (take me somewhere new)
 - **Responsive** - Works on desktop and mobile
 
 ---
@@ -138,9 +141,9 @@ src/
 | Language | Count |
 |----------|-------|
 | Hindi | 1,634 |
-| Punjabi | 1,100+ |
-| English | 900+ |
-| **Total** | **3,600+** |
+| Punjabi | 1,676 |
+| English | 1,171 |
+| **Total** | **4,481** |
 
 Each song has:
 - 8-dimensional emotional profile
