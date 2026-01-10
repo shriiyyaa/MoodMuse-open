@@ -1,4 +1,4 @@
-# 🎵 MoodMuse
+# MoodMuse
 
 > **AI-Powered Music Recommendations Based on Your Mood**
 
@@ -11,20 +11,20 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🎭 **Natural Language Mood Input** - Describe how you feel in your own words
-- 🤖 **AI-Powered Analysis** - Uses OpenAI to understand emotional context
-- 🎶 **Smart Recommendations** - Matches songs to your emotional profile
-- 🌍 **Multi-Language Support** - Hindi, Punjabi, and English song libraries
-- ⏱️ **Duration Control** - Choose playlist length (15, 30, 60 minutes)
-- 🎯 **Intent Selection** - Select what you want to do (study, party, relax, etc.)
-- 🌙 **Dark/Light Mode** - Beautiful UI with theme support
-- 📱 **Responsive Design** - Works on desktop and mobile
+- **Natural Language Mood Input** - Describe how you feel in your own words
+- **AI-Powered Analysis** - Uses OpenAI to understand emotional context
+- **Smart Recommendations** - Matches songs to your emotional profile
+- **Multi-Language Support** - Hindi, Punjabi, and English song libraries
+- **Duration Control** - Choose playlist length (15, 30, 60 minutes)
+- **Intent Selection** - Select what you want to do (study, party, relax, etc.)
+- **Dark/Light Mode** - Beautiful UI with theme support
+- **Responsive Design** - Works on desktop and mobile
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |------------|---------|
@@ -36,7 +36,7 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -79,7 +79,7 @@ MoodMuse is a web application that recommends songs based on how you're feeling.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 MoodMuse/
@@ -119,13 +119,13 @@ MoodMuse/
 
 ---
 
-## 🎯 How It Works
+## How It Works
 
-1. **User Input** → User describes their mood in natural language
-2. **Language Selection** → Choose preferred music language(s)
-3. **Intent Selection** → What activity? (study, workout, chill, etc.)
-4. **Duration** → How long should the playlist be?
-5. **AI Analysis** → OpenAI analyzes the emotional profile:
+1. **User Input** - User describes their mood in natural language
+2. **Language Selection** - Choose preferred music language(s)
+3. **Intent Selection** - What activity? (study, workout, chill, etc.)
+4. **Duration** - How long should the playlist be?
+5. **AI Analysis** - OpenAI analyzes the emotional profile:
    - Valence (positivity)
    - Energy level
    - Tension
@@ -134,12 +134,12 @@ MoodMuse/
    - Hope
    - Intensity
    - Social context
-6. **Matching** → Algorithm matches songs with similar emotional profiles
-7. **Results** → Personalized playlist with YouTube integration
+6. **Matching** - Algorithm matches songs with similar emotional profiles
+7. **Results** - Personalized playlist with YouTube integration
 
 ---
 
-## 🎵 Song Database
+## Song Database
 
 | Language | Songs | 
 |----------|-------|
@@ -156,34 +156,28 @@ Each song includes:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Areas for Contribution
 
-- 🎨 **UI/UX Improvements** - Animations, responsiveness, accessibility
-- 🎵 **Song Database** - Add more songs with proper emotional profiling
-- 🌍 **New Languages** - Add support for more music languages
-- 🐛 **Bug Fixes** - Check Issues tab
-- ✨ **New Features** - Playlist saving, sharing, etc.
+- **UI/UX Improvements** - Animations, responsiveness, accessibility
+- **Song Database** - Add more songs with proper emotional profiling
+- **New Languages** - Add support for more music languages
+- **Bug Fixes** - Check Issues tab
+- **New Features** - Playlist saving, sharing, etc.
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - OpenAI for the GPT API
 - All the amazing artists whose music powers this app
 - Contributors who help improve MoodMuse
-
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/shriiyyaa">shriiyyaa</a>
-</p>
