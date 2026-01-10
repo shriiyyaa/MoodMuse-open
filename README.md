@@ -93,7 +93,9 @@ MoodMuse/
 │   │   ├── processing/         # AI processing screen
 │   │   ├── results/            # Song recommendations display
 │   │   └── api/                # API routes
-│   │       └── analyze-mood/   # OpenAI mood analysis endpoint
+│   │       ├── mood/analyze/   # OpenAI mood analysis endpoint
+│   │       ├── session/        # Session management
+│   │       └── songs/          # Song data endpoints
 │   │
 │   ├── lib/                    # Core logic
 │   │   ├── songs/              # Song databases
