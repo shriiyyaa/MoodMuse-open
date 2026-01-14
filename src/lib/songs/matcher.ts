@@ -263,8 +263,11 @@ export async function matchSongs(
     // Sort by score (highest first)
     scoredSongs.sort((a, b) => b.score - a.score);
 
-    // Select top songs with diversity
-    const selected = selectDiverseSongs(scoredSongs, limit);
+    // RANDOMIZATION: Shuffle top candidates for variety
+    // Take top 25, shuffle them, then select with diversity
+    const topCandidates = scoredSongs.slice(0, Math.min(25, scoredSongs.length));
+    shuffleArray(topCandidates);
+    const selected = selectDiverseSongs(topCandidates, limit);
 
     // Generate headline
     const headline = generateMockHeadline(moodResult.primaryMood);
@@ -515,6 +518,18 @@ function selectDiverseSongs(
     }
 
     return selected;
+}
+
+/**
+ * Shuffle an array in-place using Fisher-Yates algorithm.
+ * Ensures variety in song selection.
+ */
+function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 /**

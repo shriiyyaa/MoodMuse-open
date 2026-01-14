@@ -137,11 +137,19 @@ const KEYWORD_MAPPINGS: Record<string, string> = {
     // Angry/Stress
     'angry': 'angry', 'mad': 'angry', 'hate': 'angry', 'stress': 'stressed',
     'anxiety': 'anxious', 'worried': 'worried', 'nervous': 'anxious',
+    'overwhelmed': 'overwhelmed', 'panic': 'anxious', 'scared': 'anxious',
+
+    // Motivation/Energy
+    'motivated': 'inspired', 'pumped': 'excited', 'energetic': 'excited',
+    'workout': 'inspired', 'gym': 'inspired', 'run': 'excited',
 
     // Indian Context
     'dil': 'love', 'pyaar': 'love', 'ishq': 'love',
     'dard': 'sad', 'dukh': 'sad', 'gum': 'sad',
-    'nasha': 'ecstatic', 'masti': 'happy', 'sukoon': 'peaceful'
+    'nasha': 'ecstatic', 'masti': 'happy', 'sukoon': 'peaceful',
+    'udaas': 'sad', 'akela': 'lonely', 'khush': 'happy',
+    'rona': 'cry', 'tanha': 'lonely', 'dukhi': 'sad',
+    'khamosh': 'peaceful', 'chain': 'peaceful', 'neend': 'tired'
 };
 
 // ============================================
@@ -291,6 +299,15 @@ function normalizeText(text: string): string {
 }
 
 /**
+ * Check if a keyword exists as a whole word in text.
+ * Prevents false positives like 'good' matching in 'goodbye'.
+ */
+function hasWholeWord(text: string, word: string): boolean {
+    const regex = new RegExp(`\\b${word}\\b`, 'i');
+    return regex.test(text);
+}
+
+/**
  * Main Mock Analysis Function
  */
 export function analyzeMoodMock(text: string, emojis: string): MoodResult {
@@ -313,19 +330,25 @@ export function analyzeMoodMock(text: string, emojis: string): MoodResult {
         }
     }
 
-    // 1. Check Keywords (If no phrase found)
+    // 1. Check Keywords (If no phrase found) - Use word boundary matching
     if (!foundPhrase) {
         Object.keys(KEYWORD_MAPPINGS).forEach(keyword => {
-            if (combinedText.includes(keyword)) {
+            if (hasWholeWord(combinedText, keyword)) {
                 targetMoodKey = KEYWORD_MAPPINGS[keyword];
             }
         });
     }
 
-    // 2. Check Emojis
+    // 2. Check Emojis - Only use emoji if no strong text match found
+    // This prevents emojis from completely overriding text meaning
+    const detectedFromText = targetMoodKey !== 'content';
     for (const char of combinedText) {
         if (EMOJI_MOODS[char]) {
-            targetMoodKey = EMOJI_MOODS[char];
+            // If text gave us a mood, only upgrade if emoji is stronger
+            // Otherwise, use the emoji mood
+            if (!detectedFromText) {
+                targetMoodKey = EMOJI_MOODS[char];
+            }
         }
     }
 
