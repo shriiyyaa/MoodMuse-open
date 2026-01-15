@@ -9,10 +9,86 @@
  * high-quality explanations from song metadata.
  */
 
-import { MoodResult } from '@/lib/mood/types';
+import { MoodResult, MoodVector } from '@/lib/mood/types';
 import { Song, SongMatch, SongMatchResponse } from '@/lib/songs/types';
 import { getSongsByLanguage } from '@/lib/songs/database';
 import { calculateMoodSimilarity } from '@/lib/mood/analyzer';
+
+// ============================================
+// INTENT-BASED CONFIGURATION
+// ============================================
+
+// Scoring weights by intent
+const INTENT_WEIGHTS = {
+    stay: { vectorWeight: 0.7, categoryWeight: 0.3, randomness: 0.0 },
+    lift: { vectorWeight: 0.5, categoryWeight: 0.5, randomness: 0.1 },
+    distract: { vectorWeight: 0.2, categoryWeight: 0.8, randomness: 0.0 },
+    surprise: { vectorWeight: 0.3, categoryWeight: 0.3, randomness: 0.4 }
+};
+
+/**
+ * Transform the target mood vector based on user's intent.
+ * - Stay: Exact match to current mood
+ * - Lift: Gradually more positive/hopeful
+ * - Distract: Override to high-energy positive
+ * - Surprise: Random positive variety
+ */
+function transformMoodForIntent(vector: Partial<MoodVector>, intent: string): Partial<MoodVector> {
+    switch (intent) {
+        case 'stay':
+            // Exact match - return as-is
+            return vector;
+
+        case 'lift':
+            // Gentle lift - boost positive dimensions
+            return {
+                valence: Math.min(1.0, (vector.valence || 0.5) + 0.15),
+                energy: Math.min(1.0, (vector.energy || 0.5) + 0.1),
+                tension: Math.max(0, (vector.tension || 0.5) - 0.2),
+                melancholy: Math.max(0, (vector.melancholy || 0.5) - 0.2),
+                nostalgia: vector.nostalgia || 0.4,
+                hope: Math.min(1.0, (vector.hope || 0.5) + 0.3),
+                intensity: vector.intensity || 0.5,
+                social: Math.min(1.0, (vector.social || 0.5) + 0.1)
+            };
+
+        case 'distract':
+            // Complete override to upbeat/party vibe
+            return {
+                valence: 0.85,
+                energy: 0.9,
+                tension: 0.15,
+                melancholy: 0.05,
+                nostalgia: 0.1,
+                hope: 0.8,
+                intensity: 0.75,
+                social: 0.85
+            };
+
+        case 'surprise':
+            // Random but pleasant - avoid extremes
+            return {
+                valence: 0.5 + Math.random() * 0.35,
+                energy: 0.3 + Math.random() * 0.5,
+                tension: Math.random() * 0.3,
+                melancholy: Math.random() * 0.4,
+                nostalgia: 0.2 + Math.random() * 0.5,
+                hope: 0.4 + Math.random() * 0.4,
+                intensity: 0.3 + Math.random() * 0.5,
+                social: 0.3 + Math.random() * 0.5
+            };
+
+        default:
+            return vector;
+    }
+}
+
+/**
+ * Get scoring weights for the given intent
+ */
+function getIntentWeights(intent: string): { vectorWeight: number; categoryWeight: number; randomness: number } {
+    return INTENT_WEIGHTS[intent as keyof typeof INTENT_WEIGHTS] || INTENT_WEIGHTS.stay;
+}
 
 // ============================================
 // HEADLINE TEMPLATES - Empathetic mood headlines
@@ -238,24 +314,39 @@ export async function matchSongs(
     // Filter out excluded songs
     candidates = candidates.filter(song => !excludeSet.has(song.id));
 
-    // Score songs with CATEGORY BONUS
+    // Get intent-based configuration
+    const weights = getIntentWeights(intent);
+
+    // Transform mood vector based on intent
+    const targetVector = transformMoodForIntent(moodResult.vector, intent);
+
+    // Score songs with INTENT-AWARE ALGORITHM
     const scoredSongs = candidates.map(song => {
         const songCategories = classifySongMood(song.title, song.artist);
 
         // Check if song matches preferred categories
         const categoryMatch = preferredCategories.some(pref => songCategories.includes(pref as any));
 
-        // Base score from vector similarity
-        let score = calculateMoodSimilarity(moodResult.vector, song.emotionalProfile);
+        // Vector similarity score (using transformed vector for intent)
+        const vectorScore = calculateMoodSimilarity(targetVector as any, song.emotionalProfile);
 
-        // CATEGORY BONUSES
+        // Category score
+        let categoryScore = 0;
         if (categoryMatch) {
-            score += 0.5; // Big boost for matching category
+            categoryScore = 1.0; // Strong category match
         }
 
-        // Apply GENERALIZED PENALTY for conflicting moods
+        // Apply penalty for conflicting moods
         const penalty = calculateCategoryPenalty(preferredCategories, songCategories as string[]);
-        score += penalty;
+        categoryScore += penalty;
+
+        // Randomness factor for surprise intent
+        const randomBonus = Math.random() * weights.randomness;
+
+        // Weighted final score based on intent
+        const score = (vectorScore * weights.vectorWeight) +
+            (categoryScore * weights.categoryWeight) +
+            randomBonus;
 
         return { song, score, categories: songCategories };
     });
@@ -263,11 +354,20 @@ export async function matchSongs(
     // Sort by score (highest first)
     scoredSongs.sort((a, b) => b.score - a.score);
 
-    // RANDOMIZATION: Shuffle top candidates for variety
-    // Take top 25, shuffle them, then select with diversity
-    const topCandidates = scoredSongs.slice(0, Math.min(25, scoredSongs.length));
-    shuffleArray(topCandidates);
-    const selected = selectDiverseSongs(topCandidates, limit);
+    let selected;
+
+    // Special handling for 'lift' intent: create a progression
+    if (intent === 'lift' && scoredSongs.length >= limit) {
+        // For lift: start with mood-matching songs, end with uplifting ones
+        // Re-score with progressively more hopeful targets
+        const liftProgression = selectLiftProgression(scoredSongs, moodResult, limit, classifySongMood);
+        selected = liftProgression;
+    } else {
+        // Standard selection: shuffle top candidates for variety
+        const topCandidates = scoredSongs.slice(0, Math.min(25, scoredSongs.length));
+        shuffleArray(topCandidates);
+        selected = selectDiverseSongs(topCandidates, limit);
+    }
 
     // Generate headline
     const headline = generateMockHeadline(moodResult.primaryMood);
@@ -513,6 +613,83 @@ function selectDiverseSongs(
             if (selected.length >= limit) break;
             if (!selected.includes(item)) {
                 selected.push(item);
+            }
+        }
+    }
+
+    return selected;
+}
+
+/**
+ * Select songs for 'lift' intent with emotional progression.
+ * Creates a journey: Songs 1-2 acknowledge current mood, Songs 3-4 transition, Song 5 is uplifting.
+ */
+function selectLiftProgression(
+    scoredSongs: { song: Song; score: number; categories?: string[] }[],
+    moodResult: MoodResult,
+    limit: number,
+    classifySongMood: (title: string, artist: string) => string[]
+): { song: Song; score: number }[] {
+    const selected: { song: Song; score: number }[] = [];
+    const usedArtists = new Set<string>();
+
+    // Define the progression stages
+    const stages = [
+        { name: 'acknowledge', ratio: 0.4 },  // 40% - match current mood
+        { name: 'transition', ratio: 0.4 },   // 40% - hopeful but gentle
+        { name: 'uplift', ratio: 0.2 }        // 20% - positive destination
+    ];
+
+    // Category preferences for each stage
+    const moodLower = moodResult.primaryMood.toLowerCase();
+    const isSadMood = moodLower.includes('sad') || moodLower.includes('lonely') || moodLower.includes('heartbroken');
+
+    const stageCategories = isSadMood ? {
+        acknowledge: ['sad', 'heartbreak', 'melancholy'],
+        transition: ['romantic', 'chill', 'nostalgia'],
+        uplift: ['happy', 'motivational', 'romantic']
+    } : {
+        acknowledge: ['chill', 'romantic', 'nostalgia'],
+        transition: ['happy', 'romantic', 'chill'],
+        uplift: ['happy', 'party', 'motivational']
+    };
+
+    // Calculate songs per stage
+    const counts = {
+        acknowledge: Math.max(1, Math.floor(limit * stages[0].ratio)),
+        transition: Math.max(1, Math.floor(limit * stages[1].ratio)),
+        uplift: limit - Math.max(1, Math.floor(limit * stages[0].ratio)) - Math.max(1, Math.floor(limit * stages[1].ratio))
+    };
+
+    // Select songs for each stage
+    for (const stageName of ['acknowledge', 'transition', 'uplift'] as const) {
+        const stageCategs = stageCategories[stageName];
+        const stageCount = counts[stageName];
+
+        // Filter songs that match this stage's categories
+        const stageCandidates = scoredSongs.filter(item => {
+            if (usedArtists.has(item.song.artist)) return false;
+            const songCategs = item.categories || classifySongMood(item.song.title, item.song.artist);
+            return stageCategs.some(cat => songCategs.includes(cat));
+        });
+
+        // Sort by score and take top candidates for this stage
+        stageCandidates.sort((a, b) => b.score - a.score);
+
+        for (let i = 0; i < stageCount && i < stageCandidates.length; i++) {
+            if (selected.length >= limit) break;
+            selected.push({ song: stageCandidates[i].song, score: stageCandidates[i].score });
+            usedArtists.add(stageCandidates[i].song.artist);
+        }
+    }
+
+    // Fill any remaining slots
+    if (selected.length < limit) {
+        for (const item of scoredSongs) {
+            if (selected.length >= limit) break;
+            if (!usedArtists.has(item.song.artist)) {
+                selected.push({ song: item.song, score: item.score });
+                usedArtists.add(item.song.artist);
             }
         }
     }
