@@ -376,7 +376,72 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     'taking it easy': 'content',
     'chilling out': 'content',
     'zen mode': 'peaceful',
-    'vibe check': 'content'
+    'vibe check': 'content',
+
+    // === COMMON CONVERSATIONAL PHRASES ===
+    // Greetings/Generic (map to positive moods)
+    'feeling great': 'happy',
+    'feeling good': 'happy',
+    'doing great': 'happy',
+    'doing good': 'content',
+    'all good': 'content',
+    'im good': 'content',
+    'pretty good': 'content',
+    'not bad': 'content',
+    'so so': 'bored',
+    'meh': 'bored',
+    'kinda tired': 'tired',
+    'bit tired': 'tired',
+    'little sad': 'sad',
+    'feeling down': 'sad',
+    'could be better': 'sad',
+    'not great': 'sad',
+    'been better': 'sad',
+    'rough day': 'stressed',
+    'long day': 'tired',
+    'hard day': 'exhausted',
+    'need a break': 'exhausted',
+    'need to relax': 'peaceful',
+    'want to chill': 'content',
+    'feeling lazy': 'bored',
+    'bored af': 'bored',
+    'so bored': 'bored',
+
+    // Emotional states
+    'in love': 'love',
+    'crushing hard': 'romantic',
+    'cant stop thinking': 'romantic',
+    'really missing': 'miss',
+    'so lonely': 'lonely',
+    'all alone': 'lonely',
+    'nobody cares': 'lonely',
+    'feel empty': 'empty',
+    'so angry': 'angry',
+    'really mad': 'angry',
+    'really sad': 'heartbroken',
+    'super happy': 'ecstatic',
+    'so happy': 'ecstatic',
+    'extremely happy': 'ecstatic',
+    'really excited': 'excited',
+    'cant wait': 'excited',
+    'looking forward': 'excited',
+
+    // Hindi casual phrases
+    'kya haal': 'content',
+    'theek hu': 'content',
+    'thik hu': 'content',
+    'accha hu': 'happy',
+    'mast hu': 'happy',
+    'bohot khush': 'ecstatic',
+    'bahut khush': 'ecstatic',
+    'bohot sad': 'heartbroken',
+    'bahut sad': 'heartbroken',
+    'bahut tired': 'exhausted',
+    'neend aa rahi': 'tired',
+    'sone ka mann': 'tired',
+    'party mood': 'ecstatic',
+    'chill karna': 'content',
+    'relax karna': 'peaceful'
 };
 
 // ============================================
@@ -487,14 +552,53 @@ export function analyzeMoodMock(text: string, emojis: string): MoodResult {
         }
     }
 
+    // 3. SMART FALLBACK - If still 'content', try time-based or random variety
+    if (targetMoodKey === 'content') {
+        const hour = new Date().getHours();
+        const randomValue = Math.random();
+
+        // Time-of-day defaults (30% chance to use time-based mood)
+        if (randomValue < 0.3) {
+            if (hour >= 6 && hour < 12) {
+                // Morning: energetic moods
+                const morningMoods = ['inspired', 'happy', 'excited'];
+                targetMoodKey = morningMoods[Math.floor(Math.random() * morningMoods.length)];
+            } else if (hour >= 12 && hour < 18) {
+                // Afternoon: focused/productive moods
+                const afternoonMoods = ['focused', 'content', 'happy'];
+                targetMoodKey = afternoonMoods[Math.floor(Math.random() * afternoonMoods.length)];
+            } else if (hour >= 18 && hour < 22) {
+                // Evening: romantic/chill moods
+                const eveningMoods = ['romantic', 'peaceful', 'nostalgic'];
+                targetMoodKey = eveningMoods[Math.floor(Math.random() * eveningMoods.length)];
+            } else {
+                // Night: calm/sleep moods
+                const nightMoods = ['peaceful', 'tired', 'melancholic'];
+                targetMoodKey = nightMoods[Math.floor(Math.random() * nightMoods.length)];
+            }
+        } else {
+            // Random variety from pleasant moods (70% chance)
+            const varietyMoods = ['happy', 'romantic', 'inspired', 'peaceful', 'nostalgic', 'excited'];
+            targetMoodKey = varietyMoods[Math.floor(Math.random() * varietyMoods.length)];
+        }
+    }
+
     // 4. Retrieve Vector
     const preset = MOOD_PRESETS[targetMoodKey] || MOOD_PRESETS['content'];
 
-    // 5. Construct Result
+    // 5. Confidence based on detection quality
+    let confidence = 0.9;
+    if (foundPhrase) {
+        confidence = 0.95; // High confidence for exact phrase match
+    } else if (targetMoodKey === 'content') {
+        confidence = 0.7; // Lower confidence for fallback/random
+    }
+
+    // 6. Construct Result
     return {
         vector: validateMoodVector(preset.vector),
         primaryMood: preset.mood,
-        confidence: foundPhrase ? 0.95 : 0.9,
+        confidence,
         breakdown: {
             textContribution: 0.5,
             emojiContribution: 0.5
