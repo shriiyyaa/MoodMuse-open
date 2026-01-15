@@ -114,42 +114,131 @@ const EMOJI_MOODS: Record<string, string> = {
 };
 
 // ============================================
-// KEYWORD DICTIONARY
+// KEYWORD DICTIONARY (MASSIVELY EXPANDED)
+// Sorted by emotional category with intensity levels
 // ============================================
 const KEYWORD_MAPPINGS: Record<string, string> = {
-    // Happy
-    'happy': 'happy', 'joy': 'happy', 'good': 'content', 'great': 'happy',
-    'excited': 'excited', 'party': 'ecstatic', 'dance': 'excited', 'fun': 'happy',
+    // === HAPPINESS (Mild to Intense) ===
+    'okay': 'content', 'fine': 'content', 'alright': 'content', 'decent': 'content',
+    'good': 'content', 'nice': 'content', 'pleasant': 'content', 'satisfied': 'content',
+    'happy': 'happy', 'joy': 'happy', 'joyful': 'happy', 'cheerful': 'happy',
+    'glad': 'happy', 'delighted': 'happy', 'pleased': 'happy', 'blessed': 'happy',
+    'great': 'happy', 'wonderful': 'happy', 'amazing': 'excited', 'awesome': 'excited',
+    'fantastic': 'excited', 'incredible': 'excited', 'thrilled': 'excited',
+    'ecstatic': 'ecstatic', 'overjoyed': 'ecstatic', 'elated': 'ecstatic',
+    'euphoric': 'ecstatic', 'blissful': 'ecstatic', 'exhilarated': 'ecstatic',
 
-    // Sad
-    'sad': 'sad', 'cry': 'sad', 'crying': 'sad', 'depressed': 'depressed',
-    'lonely': 'lonely', 'alone': 'lonely', 'pain': 'sad', 'hurt': 'sad',
-    'breakup': 'heartbroken', 'broken': 'heartbroken', 'heartbreak': 'heartbroken',
+    // === SADNESS (Mild to Intense) ===
+    'blue': 'sad', 'down': 'sad', 'low': 'sad',
+    'sad': 'sad', 'unhappy': 'sad', 'upset': 'sad', 'gloomy': 'sad', 'glum': 'sad',
+    'melancholy': 'melancholic', 'sorrowful': 'sad', 'miserable': 'depressed',
+    'depressed': 'depressed', 'despair': 'depressed', 'hopeless': 'depressed',
+    'devastated': 'heartbroken', 'shattered': 'heartbroken', 'destroyed': 'heartbroken',
+    'crushed': 'heartbroken', 'wrecked': 'heartbroken', 'ruined': 'heartbroken',
+    'cry': 'cry', 'crying': 'cry', 'tears': 'cry', 'weeping': 'cry', 'sobbing': 'cry',
 
-    // Love
-    'love': 'love', 'romantic': 'romantic', 'crush': 'romantic', 'couple': 'romantic',
-    'miss': 'miss', 'missing': 'miss',
+    // === LONELINESS ===
+    'lonely': 'lonely', 'alone': 'lonely', 'isolated': 'lonely', 'abandoned': 'lonely',
+    'forgotten': 'lonely', 'invisible': 'lonely', 'excluded': 'lonely', 'ignored': 'lonely',
+    'noone': 'lonely', 'nobody': 'lonely', 'friendless': 'lonely',
 
-    // Chill
-    'chill': 'content', 'relax': 'peaceful', 'calm': 'peaceful', 'tired': 'tired',
-    'sleepy': 'tired', 'bored': 'bored',
+    // === HEARTBREAK & LOSS ===
+    'heartbreak': 'heartbroken', 'heartbroken': 'heartbroken', 'breakup': 'heartbroken',
+    'broke up': 'heartbroken', 'dumped': 'heartbroken', 'rejected': 'heartbroken',
+    'cheated': 'heartbroken', 'betrayed': 'heartbroken', 'lied': 'heartbroken',
+    'ghosted': 'heartbroken', 'blocked': 'heartbroken', 'left': 'heartbroken',
+    'broken': 'heartbroken', 'hurt': 'sad', 'pain': 'sad', 'ache': 'sad', 'aching': 'sad',
+    'loss': 'grief', 'lost': 'grief', 'died': 'grief', 'death': 'grief', 'gone': 'grief',
 
-    // Angry/Stress
-    'angry': 'angry', 'mad': 'angry', 'hate': 'angry', 'stress': 'stressed',
-    'anxiety': 'anxious', 'worried': 'worried', 'nervous': 'anxious',
-    'overwhelmed': 'overwhelmed', 'panic': 'anxious', 'scared': 'anxious',
+    // === LOVE & ROMANCE ===
+    'love': 'love', 'loving': 'love', 'adore': 'love', 'cherish': 'love',
+    'romantic': 'romantic', 'romance': 'romantic', 'crush': 'romantic', 'crushing': 'romantic',
+    'infatuated': 'love', 'smitten': 'love', 'attracted': 'romantic', 'attraction': 'romantic',
+    'couple': 'romantic', 'dating': 'romantic', 'date': 'romantic', 'relationship': 'romantic',
+    'boyfriend': 'romantic', 'girlfriend': 'romantic', 'partner': 'romantic', 'bae': 'romantic',
+    'sweetheart': 'romantic', 'darling': 'romantic', 'honey': 'romantic', 'baby': 'romantic',
+    'cuddle': 'romantic', 'cuddling': 'romantic', 'hug': 'romantic', 'kiss': 'romantic',
 
-    // Motivation/Energy
-    'motivated': 'inspired', 'pumped': 'excited', 'energetic': 'excited',
-    'workout': 'inspired', 'gym': 'inspired', 'run': 'excited',
+    // === MISSING SOMEONE ===
+    'miss': 'miss', 'missing': 'miss', 'longing': 'miss', 'yearn': 'miss', 'yearning': 'miss',
+    'memories': 'nostalgic', 'remember': 'nostalgic', 'nostalgia': 'nostalgic',
+    'past': 'nostalgic', 'throwback': 'nostalgic', 'reminisce': 'nostalgic',
 
-    // Indian Context
-    'dil': 'love', 'pyaar': 'love', 'ishq': 'love',
-    'dard': 'sad', 'dukh': 'sad', 'gum': 'sad',
-    'nasha': 'ecstatic', 'masti': 'happy', 'sukoon': 'peaceful',
-    'udaas': 'sad', 'akela': 'lonely', 'khush': 'happy',
-    'rona': 'cry', 'tanha': 'lonely', 'dukhi': 'sad',
-    'khamosh': 'peaceful', 'chain': 'peaceful', 'neend': 'tired'
+    // === ANGER (Mild to Intense) ===
+    'annoyed': 'frustrated', 'irritated': 'frustrated', 'bothered': 'frustrated',
+    'frustrated': 'frustrated', 'pissed': 'angry', 'mad': 'angry',
+    'angry': 'angry', 'furious': 'angry', 'rage': 'angry', 'raging': 'angry',
+    'livid': 'angry', 'enraged': 'angry', 'fuming': 'angry', 'seething': 'angry',
+    'hate': 'angry', 'hatred': 'angry', 'despise': 'angry', 'loathe': 'angry',
+
+    // === ANXIETY & STRESS ===
+    'nervous': 'anxious', 'anxious': 'anxious', 'anxiety': 'anxious', 'uneasy': 'anxious',
+    'worried': 'worried', 'worry': 'worried', 'worrying': 'worried', 'concern': 'worried',
+    'scared': 'anxious', 'afraid': 'anxious', 'fear': 'anxious', 'fearful': 'anxious',
+    'terrified': 'overwhelmed', 'panic': 'anxious', 'panicking': 'anxious', 'panicked': 'anxious',
+    'stressed': 'stressed', 'stress': 'stressed', 'stressful': 'stressed', 'pressure': 'stressed',
+    'overwhelmed': 'overwhelmed', 'drowning': 'overwhelmed', 'suffocating': 'overwhelmed',
+    'burnt': 'exhausted', 'burnout': 'exhausted', 'burned out': 'exhausted',
+
+    // === PEACE & CALM ===
+    'calm': 'peaceful', 'chill': 'content', 'chilling': 'content', 'relaxed': 'peaceful',
+    'peaceful': 'peaceful', 'peace': 'peaceful', 'serene': 'peaceful', 'tranquil': 'peaceful',
+    'zen': 'peaceful', 'quiet': 'peaceful', 'stillness': 'peaceful', 'centered': 'peaceful',
+    'relax': 'peaceful', 'relaxing': 'peaceful', 'unwind': 'peaceful', 'unwinding': 'peaceful',
+
+    // === TIRED & EXHAUSTED ===
+    'tired': 'tired', 'sleepy': 'tired', 'drowsy': 'tired', 'fatigued': 'tired',
+    'exhausted': 'exhausted', 'drained': 'exhausted', 'depleted': 'exhausted',
+    'wiped': 'exhausted', 'beat': 'tired', 'weary': 'tired', 'worn': 'tired',
+    'bored': 'bored', 'boring': 'bored', 'meh': 'bored', 'blah': 'bored',
+
+    // === MOTIVATION & ENERGY ===
+    'motivated': 'inspired', 'motivation': 'inspired', 'inspired': 'inspired', 'driven': 'inspired',
+    'determined': 'inspired', 'focused': 'focused', 'productive': 'focused', 'ambitious': 'inspired',
+    'energetic': 'excited', 'energized': 'excited', 'pumped': 'excited', 'hyped': 'excited',
+    'ready': 'excited', 'workout': 'inspired', 'gym': 'inspired', 'exercise': 'inspired',
+    'run': 'excited', 'running': 'excited', 'training': 'inspired', 'hustle': 'inspired',
+
+    // === PARTY & CELEBRATION ===
+    'party': 'ecstatic', 'partying': 'ecstatic', 'celebrate': 'ecstatic', 'celebration': 'ecstatic',
+    'dance': 'excited', 'dancing': 'excited', 'vibing': 'excited', 'lit': 'ecstatic',
+    'turnt': 'ecstatic', 'hype': 'excited', 'fun': 'happy', 'weekend': 'excited',
+
+    // === GEN Z SLANG ===
+    'slaying': 'excited', 'ate': 'proud', 'serve': 'proud',
+    'iconic': 'proud', 'valid': 'content', 'based': 'content', 'goated': 'proud',
+    'fire': 'excited', 'bussin': 'excited', 'lowkey': 'content', 'highkey': 'excited',
+    'vibe': 'content', 'vibes': 'content', 'mood': 'content', 'same': 'content',
+    'ick': 'frustrated', 'cringe': 'frustrated', 'sus': 'anxious', 'mid': 'bored',
+    'understood': 'content', 'period': 'proud', 'iykyk': 'playful', 'bestie': 'happy',
+    'unhinged': 'excited', 'chaotic': 'excited', 'feral': 'excited', 'unwell': 'exhausted',
+
+    // === INTERNET/MEME CULTURE ===
+    'depresso': 'depressed', 'sadge': 'sad', 'copium': 'anxious', 'hopium': 'inspired',
+    'feels': 'sad', 'feelsbadman': 'sad', 'feelsgoodman': 'happy', 'poggers': 'excited',
+    'bruh': 'frustrated', 'oof': 'sad', 'f': 'sad', 'rip': 'sad',
+
+    // === HINDI/URDU EXPRESSIONS (Expanded) ===
+    'dil': 'love', 'pyaar': 'love', 'ishq': 'love', 'mohabbat': 'love', 'prem': 'love',
+    'dard': 'sad', 'dukh': 'sad', 'gum': 'sad', 'udaas': 'sad', 'dukhi': 'sad',
+    'akela': 'lonely', 'tanha': 'lonely', 'alag': 'lonely',
+    'khush': 'happy', 'khushi': 'happy', 'maza': 'happy', 'masti': 'happy',
+    'nasha': 'ecstatic', 'josh': 'excited', 'junoon': 'excited',
+    'sukoon': 'peaceful', 'chain': 'peaceful', 'khamosh': 'peaceful', 'shanti': 'peaceful',
+    'rona': 'cry', 'aansu': 'cry', 'roona': 'cry',
+    'neend': 'tired', 'thaka': 'tired', 'thaki': 'tired',
+    'gussa': 'angry', 'naraz': 'angry', 'chidh': 'frustrated',
+    'darr': 'anxious', 'fikar': 'worried', 'tension': 'stressed', 'pareshani': 'stressed',
+    'yaad': 'nostalgic', 'yaadein': 'nostalgic', 'yadein': 'nostalgic',
+
+    // === PUNJABI EXPRESSIONS ===
+    'udaasi': 'sad', 'nachna': 'excited',
+    'gabru': 'proud', 'patola': 'excited', 'sohni': 'romantic',
+
+    // === COMMON TYPOS & VARIATIONS ===
+    'happi': 'happy', 'happyy': 'happy', 'sadd': 'sad', 'saaad': 'sad',
+    'angryy': 'angry', 'tiredd': 'tired', 'boreddd': 'bored', 'lonleyy': 'lonely',
+    'depresed': 'depressed', 'anxiuos': 'anxious', 'stresed': 'stressed'
 };
 
 // ============================================
@@ -317,44 +406,86 @@ export function analyzeMoodMock(text: string, emojis: string): MoodResult {
     let targetMoodKey = 'content';
     let foundPhrase = false;
 
-    // 0. CHECK PHRASES FIRST (Priority)
-    // We check matches by length (longest match wins to avoid partials)
-    // e.g. "feeling blue" (sad) matches better than "blue" (if blue was a keyword)
+    // 0.5. CHECK MODIFIERS (Intensity)
+    const INTENSITY_MODIFIERS = ['very', 'really', 'super', 'extremely', 'so', 'too', 'totally'];
+    let intensityMultiplier = 1.0;
+
+    INTENSITY_MODIFIERS.forEach(mod => {
+        if (hasWholeWord(combinedText, mod)) intensityMultiplier = 1.2;
+    });
+
+    // 0. CHECK PHRASES FIRST (High Priority)
     const sortedPhrases = Object.keys(PHRASE_MAPPINGS).sort((a, b) => b.length - a.length);
 
     for (const phrase of sortedPhrases) {
         if (combinedText.includes(phrase)) {
             targetMoodKey = PHRASE_MAPPINGS[phrase];
             foundPhrase = true;
-            break; // Stop at first/longest phrase match for speed & priority
+            break;
         }
     }
 
-    // 1. Check Keywords (If no phrase found) - Use word boundary matching
+    // 1. CHECK KEYWORDS WITH NEGATION & SCORING
     if (!foundPhrase) {
+        const moodScores: Record<string, number> = {};
+
         Object.keys(KEYWORD_MAPPINGS).forEach(keyword => {
             if (hasWholeWord(combinedText, keyword)) {
-                targetMoodKey = KEYWORD_MAPPINGS[keyword];
+                const detectedMood = KEYWORD_MAPPINGS[keyword];
+
+                // Check NEGATION (e.g., "not happy")
+                const negationRegex = new RegExp(`(not|don't|dont|never|no)\\s+${keyword}`, 'i');
+                if (negationRegex.test(combinedText)) {
+                    // Invert mood logic (primitive but effective)
+                    if (['happy', 'excited', 'ecstatic', 'proud'].includes(detectedMood)) {
+                        moodScores['sad'] = (moodScores['sad'] || 0) + 2; // "Not happy" -> Sad
+                    } else if (['sad', 'depressed', 'lonely', 'heartbroken'].includes(detectedMood)) {
+                        moodScores['happy'] = (moodScores['happy'] || 0) + 2; // "Not sad" -> Happy
+                    }
+                } else {
+                    // Regular detection - Assign score based on intensity
+                    let score = 1;
+
+                    // Intense words get higher score
+                    if (['ecstatic', 'devastated', 'furious', 'terrified', 'exhausted'].includes(keyword)) {
+                        score = 3;
+                    } else if (['happy', 'sad', 'angry', 'anxious'].includes(keyword)) {
+                        score = 2;
+                    }
+
+                    moodScores[detectedMood] = (moodScores[detectedMood] || 0) + (score * intensityMultiplier);
+                }
             }
         });
-    }
 
-    // 2. Check Emojis - Only use emoji if no strong text match found
-    // This prevents emojis from completely overriding text meaning
-    const detectedFromText = targetMoodKey !== 'content';
-    for (const char of combinedText) {
-        if (EMOJI_MOODS[char]) {
-            // If text gave us a mood, only upgrade if emoji is stronger
-            // Otherwise, use the emoji mood
-            if (!detectedFromText) {
-                targetMoodKey = EMOJI_MOODS[char];
+        // Find highest scored mood
+        let maxScore = 0;
+        let bestMood = 'content';
+
+        Object.entries(moodScores).forEach(([mood, score]) => {
+            if (score > maxScore) {
+                maxScore = score;
+                bestMood = mood;
             }
+        });
+
+        if (maxScore > 0) {
+            targetMoodKey = bestMood;
         }
     }
 
-    // 3. Fallback for "not happy" logic (primitive)
-    if (combinedText.includes('not happy')) targetMoodKey = 'sad';
-    if (combinedText.includes('not sad')) targetMoodKey = 'happy';
+    // 2. CHECK EMOJIS (Additive, doesn't override strong text)
+    if (!foundPhrase) {
+        for (const char of combinedText) {
+            if (EMOJI_MOODS[char]) {
+                const emojiMood = EMOJI_MOODS[char];
+                // If we already have a text mood, only switch if it's "content" (weak)
+                if (targetMoodKey === 'content') {
+                    targetMoodKey = emojiMood;
+                }
+            }
+        }
+    }
 
     // 4. Retrieve Vector
     const preset = MOOD_PRESETS[targetMoodKey] || MOOD_PRESETS['content'];
@@ -363,7 +494,7 @@ export function analyzeMoodMock(text: string, emojis: string): MoodResult {
     return {
         vector: validateMoodVector(preset.vector),
         primaryMood: preset.mood,
-        confidence: foundPhrase ? 0.95 : 0.9, // Higher confidence for exact phrase match
+        confidence: foundPhrase ? 0.95 : 0.9,
         breakdown: {
             textContribution: 0.5,
             emojiContribution: 0.5
