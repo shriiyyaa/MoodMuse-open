@@ -84,6 +84,8 @@ const MOOD_PRESETS: Record<string, { vector: Partial<MoodVector>; mood: string; 
     serious: { vector: V4_TARGETS.CHILL, mood: 'serious focus', weight: 0.9 },
     focused: { vector: V4_TARGETS.MOTIVATIONAL, mood: 'laser focus', weight: 1.0 },
     melancholic: { vector: V4_TARGETS.NOSTALGIC, mood: 'melancholic thoughts', weight: 1.0 },
+    motivated: { vector: V4_TARGETS.MOTIVATIONAL, mood: 'fired up', weight: 1.2 },
+    confused: { vector: { ...V4_TARGETS.CHILL, tension: 0.5 }, mood: 'confused but okay', weight: 0.8 },
 };
 
 // ============================================
@@ -311,7 +313,8 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     'bekhayali': 'heartbroken',
 
     // === COMPOUND PHRASE OVERRIDES (prevent misdetection) ===
-    'hopeless romantic': 'romantic',      // NOT depressed!
+    // ROMANTIC expressions with negative-sounding words
+    'hopeless romantic': 'romantic',
     'hopelessly romantic': 'romantic',
     'hopelessly in love': 'love',
     'crazy in love': 'love',
@@ -326,6 +329,111 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     'falling fast': 'romantic',
     'love sick': 'romantic',
     'lovesick': 'romantic',
+    'fool for you': 'romantic',
+    'fool in love': 'romantic',
+    'crazy about you': 'love',
+    'crazy for you': 'love',
+    'mad about you': 'love',
+    'insanely in love': 'love',
+    'disgustingly in love': 'love',
+    'sickeningly sweet': 'love',
+
+    // TIRED expressions (not sad/depressed)
+    'dead tired': 'tired',
+    'dead exhausted': 'exhausted',
+    'dying of sleep': 'tired',
+    'dying to sleep': 'tired',
+    'bone tired': 'tired',
+    'dog tired': 'tired',
+    'so tired': 'tired',
+    'too tired': 'tired',
+    'damn tired': 'tired',
+    'freaking tired': 'tired',
+    'dying for a nap': 'tired',
+    'need sleep': 'tired',
+
+    // HAPPY/EXCITED expressions with intense words
+    'crazy happy': 'ecstatic',
+    'insanely happy': 'ecstatic',
+    'stupidly happy': 'ecstatic',
+    'ridiculously happy': 'ecstatic',
+    'dying of happiness': 'ecstatic',
+    'dying of joy': 'ecstatic',
+    'killing it': 'excited',
+    'crushing it': 'excited',
+    'slaying': 'excited',
+    'on fire': 'excited',
+    'fire mode': 'excited',
+    'beast mode': 'motivated',
+    'absolutely buzzing': 'excited',
+    'so freaking happy': 'ecstatic',
+
+    // FRUSTRATED expressions (not angry)
+    'sick of this': 'frustrated',
+    'sick and tired': 'frustrated',
+    'tired of this': 'frustrated',
+    'done with this': 'frustrated',
+    'over this': 'frustrated',
+    'had enough': 'frustrated',
+    'cant deal': 'frustrated',
+    'cant even': 'frustrated',
+    'literally cannot': 'frustrated',
+    'so done': 'frustrated',
+    'im done': 'frustrated',
+
+    // BORED expressions
+    'bored to death': 'bored',
+    'bored out of my mind': 'bored',
+    'dying of boredom': 'bored',
+    'so bored i could die': 'bored',
+    'bored af': 'bored',
+
+    // ANXIOUS expressions (not just sad)
+    'dying inside': 'anxious',
+    'freaking out': 'anxious',
+    'losing my mind': 'anxious',
+    'going crazy': 'anxious',
+    'going insane': 'anxious',
+    'driving me crazy': 'frustrated',
+    'driving me insane': 'frustrated',
+    'about to lose it': 'anxious',
+    'on edge': 'anxious',
+    'stressed af': 'stressed',
+    'stressed out': 'stressed',
+
+    // CHILL expressions
+    'dead calm': 'peaceful',
+    'deadly calm': 'peaceful',
+    'killing time': 'bored',
+    'taking it slow': 'peaceful',
+    'chilling out': 'content',
+    'just vibing': 'content',
+    'good vibes only': 'happy',
+    'vibes are immaculate': 'happy',
+
+    // HUNGRY/FOOD (map to neutral, don't confuse with emotions)
+    'dying for food': 'content',
+    'starving to death': 'content',
+    'could eat a horse': 'content',
+
+    // INTENSITY without negative meaning
+    'dead serious': 'focused',
+    'deadly serious': 'focused',
+    'dead set': 'focused',
+    'dead wrong': 'confused',
+    'dead right': 'proud',
+
+    // NOSTALGIC expressions
+    'take me back': 'nostalgic',
+    'those were the days': 'nostalgic',
+    'good old days': 'nostalgic',
+    'back in the day': 'nostalgic',
+
+    // CONFIDENT expressions
+    'feeling myself': 'proud',
+    'feeling like a boss': 'proud',
+    'feeling good about myself': 'happy',
+    'feeling great about': 'happy',
 
     // === GEN Z / INTERNET SLANG ===
     'slay': 'excited',
@@ -371,7 +479,6 @@ const PHRASE_MAPPINGS: Record<string, string> = {
 
     // Anxiety/Stress
     'butterflies in my stomach': 'anxious', // Specific phrase keeps original meaning
-    'on edge': 'anxious',
     'climbing walls': 'anxious',
     'end of rope': 'stressed',
     'burned out': 'exhausted',
@@ -391,7 +498,6 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     // Chill/Peace
     'peace and quiet': 'peaceful',
     'taking it easy': 'content',
-    'chilling out': 'content',
     'zen mode': 'peaceful',
     'vibe check': 'content',
 
@@ -421,7 +527,6 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     'need to relax': 'peaceful',
     'want to chill': 'content',
     'feeling lazy': 'bored',
-    'bored af': 'bored',
     'so bored': 'bored',
 
     // Emotional states
