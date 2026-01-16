@@ -310,6 +310,23 @@ const PHRASE_MAPPINGS: Record<string, string> = {
     'tera ghata': 'angry',
     'bekhayali': 'heartbroken',
 
+    // === COMPOUND PHRASE OVERRIDES (prevent misdetection) ===
+    'hopeless romantic': 'romantic',      // NOT depressed!
+    'hopelessly romantic': 'romantic',
+    'hopelessly in love': 'love',
+    'crazy in love': 'love',
+    'madly in love': 'love',
+    'stupidly in love': 'love',
+    'painfully in love': 'love',
+    'desperately in love': 'love',
+    'helplessly in love': 'love',
+    'lost in love': 'love',
+    'drunk in love': 'love',
+    'falling hard': 'romantic',
+    'falling fast': 'romantic',
+    'love sick': 'romantic',
+    'lovesick': 'romantic',
+
     // === GEN Z / INTERNET SLANG ===
     'slay': 'excited',
     'ate that': 'proud',
