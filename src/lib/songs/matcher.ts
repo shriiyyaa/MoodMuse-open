@@ -19,11 +19,13 @@ import { calculateMoodSimilarity } from '@/lib/mood/analyzer';
 // ============================================
 
 // Scoring weights by intent
+// CATEGORIES are PRIMARY (based on song feel/keywords)
+// VECTORS are SECONDARY (auto-generated, less reliable)
 const INTENT_WEIGHTS = {
-    stay: { vectorWeight: 0.7, categoryWeight: 0.3, randomness: 0.0 },
-    lift: { vectorWeight: 0.5, categoryWeight: 0.5, randomness: 0.1 },
-    distract: { vectorWeight: 0.2, categoryWeight: 0.8, randomness: 0.0 },
-    surprise: { vectorWeight: 0.3, categoryWeight: 0.3, randomness: 0.4 }
+    stay: { vectorWeight: 0.3, categoryWeight: 0.7, randomness: 0.0 },      // FLIPPED: category-first
+    lift: { vectorWeight: 0.3, categoryWeight: 0.7, randomness: 0.1 },      // Category-first for progression
+    distract: { vectorWeight: 0.1, categoryWeight: 0.9, randomness: 0.0 },  // Almost pure category
+    surprise: { vectorWeight: 0.2, categoryWeight: 0.4, randomness: 0.4 }   // More random
 };
 
 /**
@@ -351,7 +353,16 @@ export async function matchSongs(
         return { song, score, categories: songCategories };
     });
 
-    // Sort by score (highest first)
+    // =========================================
+    // RANDOMIZATION FIX: Add random bonus to break ties and ensure variety
+    // =========================================
+    scoredSongs.forEach(item => {
+        // Add 0-25% random bonus to score to break ties and create variety
+        const randomBonus = Math.random() * 0.25;
+        item.score += randomBonus;
+    });
+
+    // Sort by score (highest first) - now includes random variation
     scoredSongs.sort((a, b) => b.score - a.score);
 
     let selected;
@@ -363,8 +374,10 @@ export async function matchSongs(
         const liftProgression = selectLiftProgression(scoredSongs, moodResult, limit, classifySongMood);
         selected = liftProgression;
     } else {
-        // Standard selection: shuffle top candidates for variety
-        const topCandidates = scoredSongs.slice(0, Math.min(25, scoredSongs.length));
+        // =========================================
+        // VARIETY FIX: Use larger pool (100 instead of 25)
+        // =========================================
+        const topCandidates = scoredSongs.slice(0, Math.min(100, scoredSongs.length));
         shuffleArray(topCandidates);
         selected = selectDiverseSongs(topCandidates, limit);
     }
