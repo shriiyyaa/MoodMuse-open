@@ -716,10 +716,30 @@ export function analyzeMoodMock(text: string, emojis: string): MoodResult {
         confidence = 0.7; // Lower confidence for fallback/random
     }
 
-    // 6. Construct Result
+    // 6. ADD VARIETY TO MOOD DESCRIPTIONS
+    const moodVariants: Record<string, string[]> = {
+        'romantic longing': ['romantic longing', 'butterflies in my heart', 'love in the air', 'heart eyes', 'crushing hard'],
+        'tender love': ['tender love', 'deep affection', 'heart full of love', 'pure love', 'sweet romance'],
+        'quiet sadness': ['quiet sadness', 'feeling blue', 'heavy heart', 'melancholy vibes', 'somber mood'],
+        'shattered heart': ['shattered heart', 'broken inside', 'heartache', 'love wounds', 'emotional wreck'],
+        'joyful warmth': ['joyful warmth', 'pure happiness', 'radiant joy', 'sunshine vibes', 'feeling blessed'],
+        'buzzing excitement': ['buzzing excitement', 'electric energy', 'pumped up', 'on cloud nine', 'thrilled'],
+        'gentle contentment': ['gentle contentment', 'peaceful mind', 'at ease', 'all good', 'relaxed vibes'],
+        'deep depression': ['deep sadness', 'emotionally drained', 'in the dark', 'struggling', 'heavy feelings'],
+        'nostalgic': ['nostalgic', 'throwback vibes', 'reminiscing', 'old memories', 'bittersweet feelings'],
+        'racing anxiety': ['racing anxiety', 'on edge', 'overthinking', 'restless mind', 'stressed out'],
+    };
+
+    let finalMood = preset.mood;
+    if (moodVariants[preset.mood]) {
+        const variants = moodVariants[preset.mood];
+        finalMood = variants[Math.floor(Math.random() * variants.length)];
+    }
+
+    // 7. Construct Result
     return {
         vector: validateMoodVector(preset.vector),
-        primaryMood: preset.mood,
+        primaryMood: finalMood,
         confidence,
         breakdown: {
             textContribution: 0.5,
