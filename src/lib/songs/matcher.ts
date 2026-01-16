@@ -354,11 +354,11 @@ export async function matchSongs(
     });
 
     // =========================================
-    // RANDOMIZATION FIX: Add random bonus to break ties and ensure variety
+    // ULTRA-AGGRESSIVE RANDOMIZATION: Maximum variety
     // =========================================
     scoredSongs.forEach(item => {
-        // Add 0-25% random bonus to score to break ties and create variety
-        const randomBonus = Math.random() * 0.25;
+        // Add 0-50% random bonus - this is HUGE and ensures very different results each time
+        const randomBonus = Math.random() * 0.5;
         item.score += randomBonus;
     });
 
@@ -375,9 +375,9 @@ export async function matchSongs(
         selected = liftProgression;
     } else {
         // =========================================
-        // VARIETY FIX: Use larger pool (100 instead of 25)
+        // VARIETY FIX: Use HUGE pool (200 songs)
         // =========================================
-        const topCandidates = scoredSongs.slice(0, Math.min(100, scoredSongs.length));
+        const topCandidates = scoredSongs.slice(0, Math.min(200, scoredSongs.length));
         shuffleArray(topCandidates);
         selected = selectDiverseSongs(topCandidates, limit);
     }
