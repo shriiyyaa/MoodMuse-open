@@ -328,14 +328,17 @@ export async function matchSongs(
 
         // Check if song matches preferred categories
         const categoryMatch = preferredCategories.some(pref => songCategories.includes(pref as any));
+        const isNeutral = songCategories.includes('neutral' as any);
 
         // Vector similarity score (using transformed vector for intent)
         const vectorScore = calculateMoodSimilarity(targetVector as any, song.emotionalProfile);
 
-        // Category score
-        let categoryScore = 0;
+        // Category score - EVERY song gets a fair base score
+        let categoryScore = 0.5;  // BASE SCORE for ALL songs (ensures neutral songs have a chance)
         if (categoryMatch) {
             categoryScore = 1.0; // Strong category match
+        } else if (isNeutral) {
+            categoryScore = 0.6; // Neutral songs get slightly better than base
         }
 
         // Apply penalty for conflicting moods
@@ -375,11 +378,11 @@ export async function matchSongs(
         selected = liftProgression;
     } else {
         // =========================================
-        // VARIETY FIX: Use HUGE pool (200 songs)
+        // FIX: Use ALL SONGS - no limit!
+        // Shuffle the ENTIRE list to give every song a chance
         // =========================================
-        const topCandidates = scoredSongs.slice(0, Math.min(200, scoredSongs.length));
-        shuffleArray(topCandidates);
-        selected = selectDiverseSongs(topCandidates, limit);
+        shuffleArray(scoredSongs);  // Shuffle ALL songs first
+        selected = selectDiverseSongs(scoredSongs, limit);
     }
 
     // Generate headline
